@@ -15,7 +15,8 @@ class UserBase(BaseModel):
 class UserLogin(UserBase):
     password: str = Field(
         ...,
-        min_length=8
+        min_length=8,
+        max_length=24
     )
 
 class User(UserBase):
@@ -30,6 +31,13 @@ class User(UserBase):
         max_length=50
     )
     birth_date: Optional[date] = Field(default=None)
+
+class UserRegister(User):
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=24
+    )
 
 class Tweets(BaseModel):
     tweet_id: UUID = Field(...)
