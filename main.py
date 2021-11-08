@@ -13,21 +13,31 @@ app = FastAPI()
 
 @app.get(
     path="/",
-    summary="Get Working Tweets in Home"
+    response_model=List[Tweets],
+    summary="Show all tweets",
+    status_code=status.HTTP_200_OK,
+    tags=["Tweets"]
 )
 def home():
     """
-    Home
+    Show all tweets
 
-    This api work with tweets
+    This API show all tweets in the app
 
-    Not parameters
+    Parameters:
+        -
 
-    Show dictionary with {"tweets":"¡Working!}
+    Returns:
+        This API show all tweets in the app with the following keys:
+            tweet_id: UUID
+            content: str
+            created_at: datetime
+            updated_at: Optional[datetime]
+            by: User
     """
-    return {
-        "tweets": "¡Working!"
-    }
+    with open('tweets.json', mode='r', encoding='utf-8') as f:
+        tweet_list = json.loads(f.read())
+        return tweet_list
 
 @app.post(
     path="/signup",
@@ -133,16 +143,6 @@ def update_a_user():
 
 #Path Operations => Tweets
 
-@app.get(
-    path="/",
-    response_model=List[Tweets],
-    summary="Show all tweets",
-    status_code=status.HTTP_200_OK,
-    tags=["Tweets"]
-)
-def home():
-    pass
-
 @app.post(
     path="/post",
     response_model=Tweets,
@@ -150,8 +150,35 @@ def home():
     status_code=status.HTTP_201_CREATED,
     tags=["Tweets"]
 )
-def post():
-    pass
+def post(tweet: Tweets = Body(...)):
+    """
+    Post a tweet
+
+    With this api you can post a tweet
+
+    Parameters:
+        -
+
+    Returns:
+        - A json with user information without password
+            tweet_id: UUID
+            content: str
+            created_at: datetime
+            updated_at: Optional[datetime]
+            by: User
+    """
+    with open('tweets.json', mode="r+", encoding="utf-8") as f:
+        results = json.loads(f.read())
+        tweet_dict = tweet.dict()
+        tweet_dict["tweet_id"] = str(tweet_dict["tweet_id"])
+        tweet_dict["created_at"] = str(tweet_dict["created_at"])
+        tweet_dict["updated_at"] = str(tweet_dict["updated_at"])
+        tweet_dict["by"]["user_id"] = str(tweet_dict["by"]["user_id"])
+        tweet_dict["by"]["birth_date"] = str(tweet_dict["by"]["birth_date"])
+        results.append(tweet_dict)
+        f.seek(0)
+        f.write(json.dumps(results))
+        return tweet
 
 @app.get(
     path="/tweets/{tweet_id}",
